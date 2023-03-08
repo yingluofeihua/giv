@@ -1,0 +1,8 @@
+README.md
+giv.py
+setup.py
+giv.egg-info/PKG-INFO
+giv.egg-info/SOURCES.txt
+giv.egg-info/dependency_links.txt
+giv.egg-info/entry_points.txt
+giv.egg-info/top_level.txt
