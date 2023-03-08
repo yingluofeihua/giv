@@ -117,8 +117,6 @@ def did_talk_id():
         "source_url": "https://www.chenzhenhua.xyz/image.jpg"
     }
     response = requests.post('https://api.d-id.com/talks', headers=headers, json=json_data)
-
-    response.text
     res_id = json.loads(response.text)['id']
     return res_id
 
@@ -157,6 +155,8 @@ def generative():
     args = parser.parse_args()
     if args.type == 'singing':
         did_singing_video()
+    if args.type == 'talk':
+        did_talk_video()
     elif args.type == 'image':
         url = generate_image()
         print(url)

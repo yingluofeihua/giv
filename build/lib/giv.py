@@ -3,6 +3,7 @@
 # @File : test.py
 # @Software: PyCharm
 
+import argparse
 import json
 import time
 
@@ -11,13 +12,12 @@ import requests
 from gtts import gTTS
 
 import config
-import argparse
 
 did_api_key = config.did_api_key
 
 
 def answer_gpt35():
-    openai.api_key = config.openai.api_key
+    openai.api_key = config.openai_api_key
     prompt = config.gpt_problem
     # 访问OpenAI接口
     response = openai.ChatCompletion.create(
@@ -54,7 +54,7 @@ def synthetic_audio():
     tts.save("synthetic_audio.mp3")
 
 
-def did_id():
+def did_singing_id():
     headers = {
         'accept': 'application/json',
         # Already added when you pass json=
@@ -74,12 +74,12 @@ def did_id():
     return res_id
 
 
-def did_result():
+def did_singing_result():
     headers = {
         'Authorization': did_api_key,
     }
 
-    url = 'https://api.d-id.com/animations/' + did_id()
+    url = 'https://api.d-id.com/animations/' + did_singing_id()
     i = 1
     while True:
         try:
@@ -95,18 +95,66 @@ def did_result():
     return result_url
 
 
-def did_video():
-    url = did_result()
+def did_singing_video():
+    url = did_singing_result()
     response = requests.get(url, stream=True)
-    with open('did_video.mp4', 'wb') as f:
+    with open('did_singing_video.mp4', 'wb') as f:
         f.write(response.content)
+
+
+def did_talk_id():
+    headers = {
+        'accept': 'application/json',
+        'Authorization': did_api_key,
+    }
+
+    json_data = {
+        "driver_url": "bank://lively",
+        "script": {
+            "type": "audio",
+            "audio_url": "https://www.chenzhenhua.xyz/synthetic_audio.mp3"
+        },
+        "source_url": "https://www.chenzhenhua.xyz/image.jpg"
+    }
+    response = requests.post('https://api.d-id.com/talks', headers=headers, json=json_data)
+    res_id = json.loads(response.text)['id']
+    return res_id
+
+
+def did_talk_result():
+    headers = {
+        'Authorization': did_api_key,
+    }
+
+    url = 'https://api.d-id.com/talks/' + did_talk_id()
+    i = 1
+    while True:
+        try:
+            time.sleep(5)
+            response = requests.get(url, headers=headers)
+            result_url = json.loads(response.text)['result_url']
+            print('视频生成完成，等待下载。')
+            break
+
+        except(KeyError):
+            print("第" + str(i) + "次无结果，正在继续...")
+            i = i + 1
+    return result_url
+
+
+def did_talk_video():
+    url = did_talk_result()
+    response = requests.get(url, stream=True)
+    with open('did_talk_video.mp4', 'wb') as f:
+        f.write(response.content)
+
 
 def generative():
     parser = argparse.ArgumentParser()
     parser.add_argument('--type', type=str, default='video', help='video or image')
     args = parser.parse_args()
-    if args.type == 'video':
-        did_video()
+    if args.type == 'singing':
+        did_singing_video()
     elif args.type == 'image':
         url = generate_image()
         print(url)
